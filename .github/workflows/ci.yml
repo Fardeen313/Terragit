@@ -41,7 +41,7 @@ jobs:
 
             if [ "$CONFIRM_APPLY" = "yes" ]; then
               echo "✅ Applying Terraform changes..."
-              terraform apply -input=false -auto-approve tfplan
+              terraform destroy -input=false -auto-approve tfplan
             else
               echo "❌ Skipping terraform apply (confirmation not given)"
             fi
