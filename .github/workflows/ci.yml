@@ -3,7 +3,7 @@ name: Provision S3 via EC2 Terraform
 on:
   push:
     branches:
-      - main   # 👈 runs automatically on every commit to main 1
+      - main   # 👈 runs automatically on every commit to main
   workflow_dispatch:
     inputs:
       confirm_apply:
