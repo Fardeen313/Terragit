@@ -25,7 +25,7 @@ jobs:
         env:
           CONFIRM_APPLY: ${{ github.event.inputs.confirm_apply }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_key.pem ec2-user@${{ secrets.EC2_HOST }} << EOF
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/thanos.pem ec2-user@${{ secrets.EC2_HOST }} << EOF
             set -e
 
             rm -rf ~/Terragit
