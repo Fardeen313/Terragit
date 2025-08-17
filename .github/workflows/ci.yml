@@ -1,1 +1,35 @@
+name: Provision S3 via EC2 Terraform
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_apply:
+        description: "Do you really want to run terraform apply? (yes/no)"
+        required: true
+        default: "no"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2_key.pem
+          chmod 600 ~/.ssh/ec2_key.pem
+
+      - name: Run Terraform from EC2
+        run: |
+          if [ "${{ github.event.inputs.confirm_apply }}" != "yes" ]; then
+            echo "❌ Terraform apply skipped. Confirmation not given."
+            exit 0
+          fi
+
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_key.pem ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
+            rm -rf ~/Terragit
+            git clone https://github.com/Fardeen313/Terragit.git
+            cd Terragit/S3_Bucket
+            terraform init
+            terraform apply -auto-approve
+          EOF
 
