@@ -23,7 +23,8 @@ jobs:
 
       - name: Run Terraform on EC2
         env:
-          CONFIRM_APPLY: ${{ github.event.inputs.confirm_apply }}
+          # 👇 Default "yes" if input not provided (push event)
+          CONFIRM_APPLY: ${{ github.event.inputs.confirm_apply || 'yes' }}
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/thanos.pem ec2-user@${{ secrets.EC2_HOST }} << EOF
             set -e
@@ -45,3 +46,53 @@ jobs:
               echo "❌ Skipping terraform apply (confirmation not given)"
             fi
           EOF
+
+# name: Provision S3 via EC2 Terraform
+
+# on:
+#   push:
+#     branches:
+#       - main   # runs automatically on every commit to main
+#   workflow_dispatch:
+#     inputs:
+#       confirm_apply:
+#         description: "Do you want to apply Terraform changes? (yes/no)"
+#         required: true
+#         default: "yes"
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Setup SSH Key
+#         run: |
+#           mkdir -p ~/.ssh
+#           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/thanos.pem
+#           chmod 600 ~/.ssh/thanos.pem
+
+#       - name: Run Terraform on EC2
+#         env:
+#           CONFIRM_APPLY: ${{ github.event.inputs.confirm_apply }}
+#         run: |
+#           ssh -o StrictHostKeyChecking=no -i ~/.ssh/thanos.pem ec2-user@${{ secrets.EC2_HOST }} << EOF
+#             set -e
+
+#             rm -rf ~/Terragit
+#             git clone https://github.com/Fardeen313/Terragit.git
+#             cd Terragit/S3_Bucket
+
+#             echo "📌 Running terraform init..."
+#             terraform init -input=false
+
+#             echo "📌 Running terraform plan..."
+#             terraform plan -out=tfplan -input=false
+
+#             if [ "$CONFIRM_APPLY" = "yes" ]; then
+#               echo "✅ Applying Terraform changes..."
+#               terraform apply -input=false -auto-approve tfplan
+#             else
+#               echo "❌ Skipping terraform apply (confirmation not given)"
+#             fi
+#           EOF
+
+
