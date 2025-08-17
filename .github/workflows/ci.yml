@@ -9,7 +9,7 @@ on:
       confirm_apply:
         description: "Do you want to apply Terraform changes? (yes/no)"
         required: true
-        default: "no"
+        default: "yes"
 
 jobs:
   deploy:
