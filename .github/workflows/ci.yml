@@ -1,6 +1,9 @@
 name: Provision S3 via EC2 Terraform
 
 on:
+  push:
+    branches:
+      - main   # 👈 runs automatically on every commit to main
   workflow_dispatch:
     inputs:
       confirm_apply:
@@ -19,11 +22,12 @@ jobs:
           chmod 600 ~/.ssh/ec2_key.pem
 
       - name: Run Terraform on EC2
+        env:
+          CONFIRM_APPLY: ${{ github.event.inputs.confirm_apply }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_key.pem ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
-            set -e  # stop if any command fails
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ec2_key.pem ec2-user@${{ secrets.EC2_HOST }} << EOF
+            set -e
 
-            # Cleanup and clone repo
             rm -rf ~/Terragit
             git clone https://github.com/Fardeen313/Terragit.git
             cd Terragit/S3_Bucket
@@ -34,7 +38,7 @@ jobs:
             echo "📌 Running terraform plan..."
             terraform plan -out=tfplan -input=false
 
-            if [ "${{ github.event.inputs.confirm_apply }}" = "yes" ]; then
+            if [ "$CONFIRM_APPLY" = "yes" ]; then
               echo "✅ Applying Terraform changes..."
               terraform apply -input=false -auto-approve tfplan
             else
